@@ -25,6 +25,8 @@ namespace Microsoft.Extensions.Logging.Console
         private bool _disableColors;
         private IExternalScopeProvider _scopeProvider;
 
+        private LogLevel _logAsErrorLevel;
+
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
             : this(filter, includeScopes, false)
         {
@@ -54,11 +56,13 @@ namespace Microsoft.Extensions.Logging.Console
         {
             _includeScopes = options.IncludeScopes;
             _disableColors = options.DisableColors;
+            _logAsErrorLevel = options.LogAsErrorLevel;
             var scopeProvider = GetScopeProvider();
             foreach (var logger in _loggers.Values)
             {
                 logger.ScopeProvider = scopeProvider;
                 logger.DisableColors = options.DisableColors;
+                logger.LogAsErrorLevel = options.LogAsErrorLevel;
             }
         }
 
@@ -120,7 +124,8 @@ namespace Microsoft.Extensions.Logging.Console
 
             return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue)
                 {
-                    DisableColors = disableColors
+                    DisableColors = _disableColors,
+                    LogAsErrorLevel = _logAsErrorLevel
                 };
         }
 
