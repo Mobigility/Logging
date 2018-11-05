@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
     /// <inheritdoc />
     public class BlobAppendReferenceWrapper : ICloudAppendBlob

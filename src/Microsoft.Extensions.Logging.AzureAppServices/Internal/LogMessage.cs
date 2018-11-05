@@ -3,11 +3,11 @@
 
 using System;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
     public struct LogMessage
     {
         public DateTimeOffset Timestamp { get; set; }
-        public string Message { get; set; }
+        public ArraySegment<byte> Buffer { get; set; }
     }
 }

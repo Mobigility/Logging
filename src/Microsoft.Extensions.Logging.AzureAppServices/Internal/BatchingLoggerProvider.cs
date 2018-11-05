@@ -6,9 +6,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
     public abstract class BatchingLoggerProvider: ILoggerProvider
     {
@@ -66,7 +67,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 
         protected abstract Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token);
 
-        private async Task ProcessLogQueue(object state)
+        private async Task ProcessLogQueue()
         {
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
@@ -101,13 +102,16 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             return Task.Delay(interval, cancellationToken);
         }
 
-        internal void AddMessage(DateTimeOffset timestamp, string message)
+        protected abstract LogMessage SerializeLogEntry<TState>(LogEntry<TState> logEntry);
+
+        internal void AddMessage<TState>(LogEntry<TState> logEntry)
         {
             if (!_messageQueue.IsAddingCompleted)
             {
+                var message = SerializeLogEntry(logEntry);
                 try
                 {
-                    _messageQueue.Add(new LogMessage { Message = message, Timestamp = timestamp }, _cancellationTokenSource.Token);
+                    _messageQueue.Add(message, _cancellationTokenSource.Token);
                 }
                 catch
                 {
@@ -123,10 +127,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
                 new BlockingCollection<LogMessage>(new ConcurrentQueue<LogMessage>(), _queueSize.Value);
 
             _cancellationTokenSource = new CancellationTokenSource();
-            _outputTask = Task.Factory.StartNew<Task>(
-                ProcessLogQueue,
-                null,
-                TaskCreationOptions.LongRunning);
+            _outputTask = Task.Run(ProcessLogQueue);
         }
 
         private void Stop()

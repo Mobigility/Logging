@@ -3,21 +3,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
     /// <summary>
     /// The <see cref="ILoggerProvider"/> implementation that stores messages by appending them to Azure Blob in batches.
     /// </summary>
-    [ProviderAlias("AzureAppServicesBlob")]
-    public class BlobLoggerProvider : BatchingLoggerProvider
+    public abstract class BlobLoggerProvider : BatchingLoggerProvider
     {
         private readonly string _appName;
         private readonly string _fileName;
@@ -49,7 +47,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         {
             var value = options.CurrentValue;
             _appName = value.ApplicationName;
-            _fileName = value.ApplicationInstanceId + "_" + value.BlobName;
+            _fileName = value.BlobName;
             _blobReferenceFactory = blobReferenceFactory;
             _httpClient = new HttpClient();
         }
@@ -64,19 +62,17 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 
                 var blob = _blobReferenceFactory(blobName);
 
-                using (var stream = new MemoryStream())
-                using (var writer = new StreamWriter(stream))
-                {
-                    foreach (var logEvent in eventGroup)
-                    {
-                        writer.Write(logEvent.Message);
-                    }
+                var content = new byte[eventGroup.Sum(i => i.Buffer.Count)];
+                var contentOffset = 0;
 
-                    await writer.FlushAsync();
-                    var tryGetBuffer = stream.TryGetBuffer(out var buffer);
-                    Debug.Assert(tryGetBuffer);
-                    await blob.AppendAsync(buffer, cancellationToken);
+                foreach (var logEvent in eventGroup)
+                {
+                    var src = logEvent.Buffer;
+                    Buffer.BlockCopy(src.Array, src.Offset, content, contentOffset, src.Count);
+                    contentOffset += src.Count;
                 }
+
+                await blob.AppendAsync(new ArraySegment<byte>(content), cancellationToken);
             }
         }
 

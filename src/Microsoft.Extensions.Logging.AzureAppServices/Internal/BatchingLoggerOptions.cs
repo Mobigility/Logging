@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
     public class BatchingLoggerOptions
     {

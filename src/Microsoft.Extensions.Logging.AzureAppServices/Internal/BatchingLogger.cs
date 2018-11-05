@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Logging;
 using System;
 using System.Text;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
-    public class BatchingLogger : ILogger
+    internal class BatchingLogger : ILogger
     {
         private readonly BatchingLoggerProvider _provider;
         private readonly string _category;
@@ -34,21 +35,18 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
                 return;
             }
 
-            var builder = new StringBuilder();
-            builder.Append(timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff zzz"));
-            builder.Append(" [");
-            builder.Append(logLevel.ToString());
-            builder.Append("] ");
-            builder.Append(_category);
-            builder.Append(": ");
-            builder.AppendLine(formatter(state, exception));
-
-            if (exception != null)
+            var logEntry = new LogEntry<TState>
             {
-                builder.AppendLine(exception.ToString());
-            }
+                Category = _category,
+                Timestamp = timestamp,
+                LogLevel = logLevel,
+                EventId = eventId,
+                State = state,
+                Exception = exception,
+                Formatter = formatter
+            };
 
-            _provider.AddMessage(timestamp, builder.ToString());
+            _provider.AddMessage(logEntry);
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

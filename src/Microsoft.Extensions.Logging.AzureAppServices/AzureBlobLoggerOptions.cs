@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Logging.AzureAppServices.Internal;
+using Mobigility.Extensions.Logging.AzureBlob.Internal;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices
+namespace Mobigility.Extensions.Logging.AzureBlob
 {
     /// <summary>
     /// Options for Azure diagnostics blob logging.
@@ -30,9 +30,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
-        internal string ContainerUrl { get; set; }
+        public string ContainerUrl { get; set; }
 
-        internal string ApplicationName { get; set; }
+        public string ApplicationName { get; set; }
 
         internal string ApplicationInstanceId { get; set; }
     }
