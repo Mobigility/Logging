@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Logging;
+using Mobigility.Dumping;
 using System;
 using System.Text;
 
@@ -28,7 +29,7 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             return _provider.IsEnabled;
         }
 
-        public void Log<TState>(DateTimeOffset timestamp, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -38,7 +39,7 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             var logEntry = new LogEntry<TState>
             {
                 Category = _category,
-                Timestamp = timestamp,
+                Timestamp = (state as ISupportEventTimestamp)?.Timestamp?.ToUniversalTime() ?? DateTimeOffset.UtcNow,
                 LogLevel = logLevel,
                 EventId = eventId,
                 State = state,
@@ -47,11 +48,6 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             };
 
             _provider.AddMessage(logEntry);
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-            Log(DateTimeOffset.Now, logLevel, eventId, state, exception, formatter);
         }
     }
 }
