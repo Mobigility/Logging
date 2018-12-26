@@ -11,12 +11,12 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
     internal class BatchingLogger : ILogger
     {
         private readonly BatchingLoggerProvider _provider;
-        private readonly string _category;
+        private readonly string _categoryName;
 
         public BatchingLogger(BatchingLoggerProvider loggerProvider, string categoryName)
         {
             _provider = loggerProvider;
-            _category = categoryName;
+            _categoryName = categoryName;
         }
 
         public IDisposable BeginScope<TState>(TState state)
@@ -38,7 +38,7 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 
             var logEntry = new LogEntry<TState>
             {
-                Category = _category,
+                CategoryName = _categoryName,
                 Timestamp = (state as ISupportEventTimestamp)?.Timestamp?.ToUniversalTime() ?? DateTimeOffset.UtcNow,
                 LogLevel = logLevel,
                 EventId = eventId,

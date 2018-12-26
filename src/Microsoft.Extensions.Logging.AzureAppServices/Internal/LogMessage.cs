@@ -7,6 +7,7 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
     public struct LogMessage
     {
+        public string ApplicationName { get; set; }
         public DateTimeOffset Timestamp { get; set; }
         public ArraySegment<byte> Buffer { get; set; }
     }

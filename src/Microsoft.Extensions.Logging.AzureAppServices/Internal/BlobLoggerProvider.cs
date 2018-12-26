@@ -58,7 +58,7 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             foreach (var eventGroup in eventGroups)
             {
                 var key = eventGroup.Key;
-                var blobName = $"{_appName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
+                var blobName = $"{key.ApplicationName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
 
                 var blob = _blobReferenceFactory(blobName);
 
@@ -76,9 +76,10 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             }
         }
 
-        private (int Year, int Month, int Day, int Hour) GetBlobKey(LogMessage e)
+        private (string ApplicationName, int Year, int Month, int Day, int Hour) GetBlobKey(LogMessage e)
         {
-            return (e.Timestamp.Year,
+            return (!string.IsNullOrEmpty(e.ApplicationName) ? e.ApplicationName : _appName,
+                e.Timestamp.Year,
                 e.Timestamp.Month,
                 e.Timestamp.Day,
                 e.Timestamp.Hour);
