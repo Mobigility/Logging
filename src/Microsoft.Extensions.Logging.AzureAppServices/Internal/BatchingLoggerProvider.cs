@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Mobigility.Extensions.Logging.AzureBlob.Internal
 {
-    public abstract class BatchingLoggerProvider: ILoggerProvider
+    public abstract class BatchingLoggerProvider : ILoggerProvider
     {
         private readonly List<LogMessage> _currentBatch = new List<LogMessage>();
         private readonly TimeSpan _interval;
@@ -102,21 +102,23 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             return Task.Delay(interval, cancellationToken);
         }
 
-        protected abstract LogMessage SerializeLogEntry<TState>(LogEntry<TState> logEntry);
+        protected abstract LogMessage? SerializeLogEntry<TState>(LogEntry<TState> logEntry);
 
         internal void AddMessage<TState>(LogEntry<TState> logEntry)
         {
             if (!_messageQueue.IsAddingCompleted)
             {
                 var message = SerializeLogEntry(logEntry);
-                try
-                {
-                    _messageQueue.Add(message, _cancellationTokenSource.Token);
-                }
-                catch
-                {
-                    //cancellation token canceled or CompleteAdding called
-                }
+
+                if (message.HasValue)
+                    try
+                    {
+                        _messageQueue.Add(message.Value, _cancellationTokenSource.Token);
+                    }
+                    catch
+                    {
+                        //cancellation token canceled or CompleteAdding called
+                    }
             }
         }
 

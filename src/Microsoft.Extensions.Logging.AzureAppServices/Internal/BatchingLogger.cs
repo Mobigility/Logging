@@ -39,7 +39,6 @@ namespace Mobigility.Extensions.Logging.AzureBlob.Internal
             var logEntry = new LogEntry<TState>
             {
                 CategoryName = _categoryName,
-                Timestamp = (state as ISupportEventTimestamp)?.Timestamp?.ToUniversalTime() ?? DateTimeOffset.UtcNow,
                 LogLevel = logLevel,
                 EventId = eventId,
                 State = state,
